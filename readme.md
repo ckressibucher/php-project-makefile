@@ -28,11 +28,16 @@ complex. As a result, there are many
 *Task runners* available. In PHP, a
 good one of those is [robo.li](http://robo.li/).
 
-What they (normally) don't allow, is the
+What they (normally) don't provide, is the
 declaration of dependencies, which allow
 to run an *incremental build* (where the "build"
-could actually be anything). This is very
-important in traditional build tools like *Make*.
+could actually be any kind of task).
+If the build tool knows this dependencies, it
+can skip commands which would produce the
+same output as before, because the sources
+are the same. This is a very important
+feature of more traditional build tools like
+*Make*.
 
 Why Make (and not phing, ant, ...)
 ----------------------------------
@@ -47,7 +52,8 @@ development) *in addition* to a "real" build tool.
 I don't like the xml declaration style used by
 build tools like *ant* or *phing*. In my opinion,
 the syntax of a Makefile is much more readable and
-concise (once you got used to the few *automatic variables*).
+concise (once you got used to the few
+[automatic variables](https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html)).
 
 Another reason is that you can define commands which are
 directly executed in a shell. For common tasks, such as
