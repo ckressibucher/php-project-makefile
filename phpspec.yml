@@ -1,7 +1,0 @@
-# this is used to declare psr-4 namespaces, you may
-# need to change the `Project` namespace to your app's
-# main namespace
-suites:
-    default:
-        namespace: Project
-        psr4_prefix: Project

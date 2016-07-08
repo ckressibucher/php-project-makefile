@@ -8,6 +8,10 @@ PHP_BIN             := php
 # to make sure composer uses the project's php binary)
 COMPOSER_BIN        := composer
 
+# phan needs php v7.0 (and the ast extension)
+PHAN_BIN            := php70 ~/bin/phan
+NUM_OF_PROC         := 4
+
 # PHP's built-in dev server runs on this address
 DEV_SERVER_ADDR     := 127.0.0.1:8080
 

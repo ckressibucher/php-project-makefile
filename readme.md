@@ -6,12 +6,22 @@ new PHP project. It defines tasks which
 are common to most of the PHP projects
 as Makefile targets.
 
+Requirements
+----
+
+* GNU make
+* [phan](https://github.com/etsy/phan) (which also means php7 and the ast extension).
+
+phan is just a static code analyzer; if you don't want to setup a working environment
+for it, you can also delete the Makefile rule (and remove it as a dependency of the `test` rule).
+
 Usage
 --------
 
 1. clone this repository
-2. run `make` (this will install dependencies and run the linter and tests).
-3. run `make list` to see other targets.
+2. check config.Makefile, and change settings if required for your machine.
+3. run `make` (this will install dependencies and run the linter and tests).
+4. run `make list` to see other targets.
 
 After that, you may want to have a look at the Makefile itself,
 and adopt it to your project.
@@ -35,7 +45,7 @@ could actually be any kind of task).
 If the build tool knows this dependencies, it
 can skip commands which would produce the
 same output as before, because the sources
-are the same. This is a very important
+have not changed. This is a very important
 feature of more traditional build tools like
 *Make*.
 

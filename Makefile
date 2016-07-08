@@ -1,5 +1,5 @@
 # defines variables
-include Make.config
+include config.Makefile
 
 # finds all php files in a given directory
 macro_find_phpfiles = $(shell find $(1) -type f -name "*.php")
@@ -7,24 +7,28 @@ macro_find_phpfiles = $(shell find $(1) -type f -name "*.php")
 # finds all php sources in SRCS directories
 src = $(foreach d,$(SRCS),$(call macro_find_phpfiles,$(d)))
 
+testfiles = $(call macro_find_phpfiles,$(TEST_DIR)) phpunit.xml
+
 # run all tests
 .PHONY: test
-test: setup phplint phpspec
+test: setup phplint test_unit test_integration phan
 
 .PHONY: list
 list:
 	@echo ""
 	@echo "Useful targets:"
 	@echo ""
-	@echo "  test         > run linter and tests (default target)"
-	@echo "  phplint      > run php linter (php -l)"
-	@echo "  phpspec      > run phpspec"
+	@echo "  test             > run linter and tests (default target)"
+	@echo "  phplint          > run php linter (php -l)"
+	@echo "  phan             > run phan static code analysis"
+	@echo "  test_unit        > run unit tests"
+	@echo "  test_integration > run integration tests"
 	@echo ""
-	@echo "  setup        > install composer dependencies"
-	@echo "  deps_update  > explicitly update dependencies (composer update)"
-	@echo "  clean        > stop server, clean tmp files and vendor dir"
-	@echo "  clean_tmp    > clean temporary files (and stop server)"
-	@echo "  clean_vendor > remove vendor dir"
+	@echo "  setup            > install composer dependencies"
+	@echo "  deps_update      > explicitly update dependencies (composer update)"
+	@echo "  clean            > stop server, clean tmp files and vendor dir"
+	@echo "  clean_tmp        > clean temporary files (and stop server)"
+	@echo "  clean_vendor     > remove vendor dir"
 	@echo ""
 	@echo "  server_start > start dev server"
 	@echo "  server_stop  > stop dev server"
@@ -40,7 +44,6 @@ clean_tmp: server_stop
 clean_vendor:
 	test ! -e vendor || rm -r vendor
 
-.PHONY: setup
 setup: vendor/autoload.php
 
 # task to explicitly update the dependencies
@@ -49,11 +52,18 @@ deps_update:
 	$(COMPOSER_BIN) update
 
 # runs only if a source file has been modified
-.PHONY: phpspec
-phpspec: $(TMP_DIR)/phpspec
+.PHONY: test_unit
+test_unit: $(TMP_DIR)/test_unit
 
-$(TMP_DIR)/phpspec: $(TMP_DIR) vendor/autoload.php phpspec.yml $(src)
-	$(PHP_BIN) ./vendor/bin/phpspec run
+.PHONY: test_integration
+test_integration: $(TMP_DIR)/test_integration
+
+$(TMP_DIR)/test_unit: $(TMP_DIR) vendor/autoload.php $(src) $(testfiles)
+	$(PHP_BIN) ./vendor/bin/phpunit --testsuite=unit
+	touch $@
+
+$(TMP_DIR)/test_integration: $(TMP_DIR) vendor/autoload.php $(src) $(testfiles)
+	$(PHP_BIN) ./vendor/bin/phpunit --testsuite=integration
 	touch $@
 
 # lint all modified sources
@@ -63,6 +73,13 @@ phplint: $(TMP_DIR)/phplint
 $(TMP_DIR)/phplint: $(TMP_DIR) $(src)
 	@echo lint source files...
 	@$(foreach f,$(filter-out $(TMP_DIR),$?),$(PHP_BIN) -l $(f);)
+	touch $@
+
+.PHONY: phan
+phan: $(TMP_DIR)/phan
+
+$(TMP_DIR)/phan: $(src)
+	$(PHAN_BIN) $(foreach d,$(SRCS), -l $(d)) -l vendor -3 vendor -b -z -j$(NUM_OF_PROC)
 	touch $@
 
 # we only do `install`, as composer.json may change
